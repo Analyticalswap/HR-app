@@ -60,6 +60,12 @@ interface HRContextType {
   holidays: PublicHoliday[];
   addHoliday: (holiday: Omit<PublicHoliday, 'id'>) => void;
 
+  // Data Source Management (Export, Import, Reset, Excel)
+  exportAllData: () => string;
+  importAllData: (jsonString: string) => { success: boolean; error?: string };
+  importExcelData: (data: { employees?: Employee[]; attendanceRecords?: AttendanceRecord[] }) => void;
+  resetToDefaultData: () => void;
+
   // Stats helper
   todayDateStr: string;
 }
@@ -573,6 +579,81 @@ export const HRProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     setHolidays((prev) => [...prev, newHol]);
   };
 
+  // Data Source Management
+  const exportAllData = () => {
+    const dump = {
+      version: '1.0',
+      exportedAt: new Date().toISOString(),
+      source: 'AegisHR Enterprise Core',
+      collections: {
+        employees,
+        attendanceRecords,
+        leaves,
+        payrollRecords,
+        holidays
+      }
+    };
+    return JSON.stringify(dump, null, 2);
+  };
+
+  const importAllData = (jsonString: string) => {
+    try {
+      const parsed = JSON.parse(jsonString);
+      const data = parsed.collections || parsed;
+
+      if (!data.employees || !Array.isArray(data.employees)) {
+        return { success: false, error: 'Invalid data format: missing employees collection.' };
+      }
+
+      if (data.employees) setEmployees(data.employees);
+      if (data.attendanceRecords) setAttendanceRecords(data.attendanceRecords);
+      if (data.leaves) setLeaves(data.leaves);
+      if (data.payrollRecords) setPayrollRecords(data.payrollRecords);
+      if (data.holidays) setHolidays(data.holidays);
+
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'JSON parsing failed.' };
+    }
+  };
+
+  const resetToDefaultData = () => {
+    localStorage.removeItem('aegis_employees');
+    localStorage.removeItem('aegis_attendance');
+    localStorage.removeItem('aegis_leaves');
+    localStorage.removeItem('aegis_payroll');
+    localStorage.removeItem('aegis_holidays');
+    localStorage.removeItem('aegis_current_user_id');
+
+    setEmployees(INITIAL_EMPLOYEES);
+    setAttendanceRecords(generatePastAttendanceRecords());
+    setLeaves(INITIAL_LEAVES);
+    setPayrollRecords(INITIAL_PAYROLL_RECORDS);
+    setHolidays(INITIAL_HOLIDAYS);
+    setCurrentUserId('EMP-1001');
+  };
+
+  const importExcelData = (data: {
+    employees?: Employee[];
+    attendanceRecords?: AttendanceRecord[];
+  }) => {
+    if (data.employees && data.employees.length > 0) {
+      setEmployees((prev) => {
+        const existingMap = new Map(prev.map((e) => [e.id, e]));
+        data.employees!.forEach((e) => existingMap.set(e.id, e));
+        return Array.from(existingMap.values());
+      });
+    }
+
+    if (data.attendanceRecords && data.attendanceRecords.length > 0) {
+      setAttendanceRecords((prev) => {
+        const existingMap = new Map(prev.map((a) => [a.id, a]));
+        data.attendanceRecords!.forEach((a) => existingMap.set(a.id, a));
+        return Array.from(existingMap.values());
+      });
+    }
+  };
+
   return (
     <HRContext.Provider
       value={{
@@ -601,6 +682,10 @@ export const HRProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         disburseAllPayroll,
         holidays,
         addHoliday,
+        exportAllData,
+        importAllData,
+        importExcelData,
+        resetToDefaultData,
         todayDateStr
       }}
     >

@@ -10,8 +10,10 @@ import {
   AlertTriangle, 
   FileEdit,
   ArrowUpDown,
-  Download
+  Download,
+  FileSpreadsheet
 } from 'lucide-react';
+import * as XLSX from 'xlsx';
 
 export const AttendanceView: React.FC = () => {
   const { 
@@ -125,6 +127,28 @@ export const AttendanceView: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
+  const exportExcel = () => {
+    const rows = filteredRecords.map((r) => ({
+      'Record ID': r.id,
+      'Employee ID': r.employeeId,
+      'Name': r.employeeName,
+      'Department': r.department,
+      'Date': r.date,
+      'Sign In': r.signInTime ? new Date(r.signInTime).toLocaleTimeString() : '',
+      'Sign Out': r.signOutTime ? new Date(r.signOutTime).toLocaleTimeString() : '',
+      'Work Hours': (r.workDurationSeconds / 3600).toFixed(2),
+      'Overtime Hours': (r.overtimeSeconds / 3600).toFixed(2),
+      'Location': r.location?.name || 'Office',
+      'Status': r.status,
+      'Regularized': r.isRegularized ? 'Yes' : 'No'
+    }));
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(rows);
+    XLSX.utils.book_append_sheet(wb, ws, 'Timesheet');
+    XLSX.writeFile(wb, `AegisHR_Attendance_${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
+
   return (
     <div className="space-y-6">
       {/* Top metric overview */}
@@ -220,14 +244,21 @@ export const AttendanceView: React.FC = () => {
             </select>
           </div>
 
-          {/* Action button: Export CSV */}
+          {/* Action buttons: Export CSV & Excel */}
           <div className="flex items-center gap-2">
+            <button
+              onClick={exportExcel}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg transition-colors whitespace-nowrap shadow-2xs"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5" />
+              <span>Export to Excel (.xlsx)</span>
+            </button>
             <button
               onClick={exportCSV}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-700 transition-colors whitespace-nowrap"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>Export Timesheet CSV</span>
+              <span>Export CSV</span>
             </button>
           </div>
         </div>

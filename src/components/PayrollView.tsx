@@ -13,8 +13,10 @@ import {
   Building,
   CreditCard,
   Download,
-  Calendar
+  Calendar,
+  FileSpreadsheet
 } from 'lucide-react';
+import * as XLSX from 'xlsx';
 
 export const PayrollView: React.FC = () => {
   const { 
@@ -64,6 +66,38 @@ export const PayrollView: React.FC = () => {
     disburseAllPayroll(selectedMonth);
     setSuccessMessage(`All ${monthRecords.length} payouts disbursed via Direct Deposit for ${selectedMonth}.`);
     setTimeout(() => setSuccessMessage(null), 4000);
+  };
+
+  const exportPayrollExcel = () => {
+    const rows = monthRecords.map((p) => ({
+      'Payroll ID': p.id,
+      'Month': p.monthYear,
+      'Employee ID': p.employeeId,
+      'Name': p.employeeName,
+      'Department': p.department,
+      'Payable Days': p.payableDays,
+      'Days Worked': p.presentDays,
+      'Overtime Hours': p.overtimeHours,
+      'Basic Salary ($)': p.earnings.basic,
+      'HRA ($)': p.earnings.hra,
+      'Allowances ($)': p.earnings.specialAllowance,
+      'Overtime Pay ($)': p.earnings.overtimePay,
+      'Gross Earnings ($)': p.earnings.grossEarnings,
+      'PF Deduction ($)': p.deductions.pf,
+      'Health Cover ($)': p.deductions.healthInsurance,
+      'Professional Tax ($)': p.deductions.professionalTax,
+      'TDS Tax ($)': p.deductions.tdsTax,
+      'LOP Loss of Pay ($)': p.deductions.lopDeduction,
+      'Total Deductions ($)': p.deductions.totalDeductions,
+      'Net Take-Home Pay ($)': p.netSalary,
+      'Status': p.paymentStatus,
+      'Payment Ref': p.transactionRef || 'Pending'
+    }));
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(rows);
+    XLSX.utils.book_append_sheet(wb, ws, 'Payroll_Register');
+    XLSX.writeFile(wb, `AegisHR_Payroll_${selectedMonth.replace(' ', '_')}.xlsx`);
   };
 
   const numberToWords = (num: number): string => {
@@ -148,6 +182,16 @@ export const PayrollView: React.FC = () => {
                   <span>Disburse All</span>
                 </button>
               )}
+
+              <button
+                type="button"
+                onClick={exportPayrollExcel}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 rounded-lg text-xs font-semibold transition-colors"
+                title="Download complete payroll register as Excel (.xlsx)"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-700" />
+                <span>Export Excel</span>
+              </button>
             </>
           )}
         </div>

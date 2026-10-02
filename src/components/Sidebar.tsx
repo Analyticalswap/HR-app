@@ -8,7 +8,8 @@ import {
   BarChart3, 
   LayoutDashboard,
   CheckCircle2,
-  CalendarCheck
+  CalendarCheck,
+  Database
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -75,6 +76,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setCurrentTab }) =
       id: 'analytics',
       label: 'HR Analytics',
       icon: BarChart3,
+      badge: null
+    },
+    {
+      id: 'datasource',
+      label: 'Data Source & Backup',
+      icon: Database,
       badge: null
     }
   ];

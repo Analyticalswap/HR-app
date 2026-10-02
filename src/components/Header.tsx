@@ -48,7 +48,8 @@ export const Header: React.FC<HeaderProps> = ({ currentTab }) => {
     leaves: 'Leave Management & Approvals',
     payroll: 'Payroll & Compensation',
     employees: 'Employee Directory',
-    analytics: 'Workforce Analytics'
+    analytics: 'Workforce Analytics',
+    datasource: 'Data Source & Storage Management'
   };
 
   return (

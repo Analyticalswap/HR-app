@@ -13,6 +13,7 @@ import { LeaveManagementView } from './components/LeaveManagementView';
 import { PayrollView } from './components/PayrollView';
 import { EmployeeDirectoryView } from './components/EmployeeDirectoryView';
 import { AnalyticsView } from './components/AnalyticsView';
+import { DataSourceView } from './components/DataSourceView';
 
 function AppContent() {
   const [currentTab, setCurrentTab] = useState<string>('dashboard');
@@ -31,6 +32,8 @@ function AppContent() {
         return <EmployeeDirectoryView />;
       case 'analytics':
         return <AnalyticsView />;
+      case 'datasource':
+        return <DataSourceView />;
       default:
         return <DashboardView setCurrentTab={setCurrentTab} />;
     }
