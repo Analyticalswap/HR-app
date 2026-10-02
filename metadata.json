@@ -1,0 +1,6 @@
+{
+  "name": "AegisHR - Payroll & Leave Management",
+  "description": "Enterprise HR and payroll management suite with online attendance sign-in/out, manager and HR leave approval workflows, salary structures, and automated payslips.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
